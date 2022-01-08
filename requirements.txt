@@ -1,0 +1,9 @@
+ipykernel
+numpy
+pandas
+scipy
+statsmodels
+matplotlib
+seaborn
+neo4j
+black
