@@ -1,2 +1,2 @@
 # notes
-Work code snippets & useful tutorial reference notes
+code snippets & useful tutorial reference notes
