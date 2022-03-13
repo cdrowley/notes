@@ -2,13 +2,19 @@ import numpy as np
 import pandas as pd
 
 
-def copy_df(df):
-    return df.copy()
-
-
 def clean_columns(df):
-    df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
+    df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
     return df
+
+
+def describe(df: pd.DataFrame) -> pd.DataFrame:
+    return (
+        df.describe()
+        .T.round(1)
+        .join(df.isnull().sum().to_frame("missing"))
+        .join(df.agg("nunique").T.to_frame("unique"))
+        .join(df.dtypes.to_frame("type"))
+    )
 
 
 def drop_missing(df, thresh=0.8):
@@ -32,15 +38,6 @@ def to_category(df, unique_thresh=0.05):
     return df
 
 
-def unique_column_values(df):
-    return (
-        df.agg("nunique")
-        .to_frame()
-        .rename(columns={0: "unique_values"})
-        .sort_values("unique_values")
-    )
-
-
 if __name__ == "__main__":
     url = "https://raw.githubusercontent.com/gchoi/Dataset/master/DirectMarketing.csv"
 
@@ -53,5 +50,5 @@ if __name__ == "__main__":
         .pipe(to_category)
     )
 
-    print(marketing_cleaned.head(10), "\n\n\n")
-    print(unique_column_values(marketing_cleaned))
+    print(marketing_cleaned.head(5), "\n")
+    print(describe(marketing_cleaned))

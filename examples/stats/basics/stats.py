@@ -14,17 +14,15 @@ def accept_sequence(func):
 
 @accept_sequence
 def mean(*args):
-    """Calculates the mean of a list of numbers."""
     return sum(args) / len(args)
 
 
 @accept_sequence
 def median(*args):
-    """Calculates the median (number at the centre of a dataset) of a list of numbers."""
+    args = sorted(args)
     if len(args) % 2 == 0:
         i = round((len(args) + 1) / 2)
         j = i - 1
-        print(i, j)
         return (args[i] + args[j]) / 2
     else:
         k = round(len(args) / 2)
@@ -95,7 +93,7 @@ def zscore_normalise(*args):
 if __name__ == "__main__":
     ##############################################################
     a = [1, 2, 3, 4, 5, 6]
-    b = [1, 2, 3, 4, 5]
+    b = [100, 2, 3, 4, 200]
     print(f"Mean: {a} == {mean(a)}")
     print(f"Mean: {b} == {mean(b)}")
     print(f"Mean: {1, 2, 3} == {mean(1, 2, 3)}")
@@ -118,7 +116,6 @@ if __name__ == "__main__":
     print(f"Variance: {b} == {variance(b)}")
     print(f"Variance: {1, 2, 3} == {variance(1, 2, 3)}")
 
-    # Generally use SD, because variance using Squared Values gives extra weight to outliers.
     # Large SD = Large Spread
     print(f"SD: {a} == {standard_deviation(a)}")
     print(f"SD: {b} == {standard_deviation(b)}")
