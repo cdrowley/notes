@@ -1,3 +1,3 @@
 # notes
 
-A space to begin collating pieces of data analysis / visualisation / modelling and commonly used snippets 
+A space to collate pieces of data analysis / visualisation / modelling and commonly used snippets 
