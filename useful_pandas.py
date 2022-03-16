@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from io import StringIO
 
 
@@ -77,6 +78,9 @@ def reduce_mem_usage(df, unique_thresh=0.05):
         if col_type.name not in ("object", "category"):
             c_min = df[col].min()
             c_max = df[col].max()
+        if pd.isnull(c_min) or pd.isnull(c_max):
+            continue
+
             if str(col_type)[:3] == "int":
                 if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
                     df[col] = df[col].astype(np.int8)
