@@ -5,3 +5,5 @@ https://madewithml.com/
 https://calmcode.io/
 
 https://pbpython.com/
+
+https://feature-engine.readthedocs.io/
