@@ -116,6 +116,6 @@ if __name__ == "__main__":
         .pipe(remove_outliers, "salary")
     )
 
-    print(marketing_cleaned.head(5), "\n")
-    print(describe(marketing_cleaned))
-    print(describe(marketing_cleaned, numeric_only=True))
+    print(marketing_cleaned.head(5))
+    print(describe(marketing_cleaned, include=None))
+    print(describe(marketing_cleaned, include='all'))
