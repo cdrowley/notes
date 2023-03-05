@@ -8,6 +8,5 @@ seaborn
 neo4j
 black
 pandas-profiling
-sklearn
 joblib
-
+Faker
