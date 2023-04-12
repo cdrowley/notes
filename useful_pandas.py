@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from io import StringIO
+from sqlalchemy.engine.base import Engine
 
 
 def describe(df: pd.DataFrame, include: str='all', percentiles: list=[.25, .5, .75], rounding: int=2) -> pd.DataFrame:
@@ -60,14 +61,11 @@ def remove_outliers(df, column_name, lbound=0.05, ubound=0.95):
 
 
 def downcast(df: pd.DataFrame, unique_thresh: float = 0.05) -> pd.DataFrame:
-    '''Compression of the common dtypes "float64", "int64", "object" or "string"'''
+    """Compress common dtypes to save memory (RAM)."""
     mem_before = df.memory_usage(deep=True).sum()
     mem_before_mb = round(mem_before / (1024**2), 2)
-
-    # convert the dataframe columns to ExtensionDtype (e.g. object to string, or 1.0 float to 1 integer, etc.)
     df = df.convert_dtypes()
 
-    # string categorization (only the ones with low cardinality)
     for column in df.select_dtypes(["string", "object"]):
         if (len(df[column].unique()) / len(df[column])) < unique_thresh:
             df[column] = df[column].astype("category")
@@ -75,7 +73,6 @@ def downcast(df: pd.DataFrame, unique_thresh: float = 0.05) -> pd.DataFrame:
     for column in df.select_dtypes(["float"]):
         df[column] = pd.to_numeric(df[column], downcast="float")
 
-    # int64 downcasting (depending if negative values are apparent (='signed') or only >=0 (='unsigned'))
     for column in df.select_dtypes(["integer"]):
         if df[column].min() >= 0:
             df[column] = pd.to_numeric(df[column], downcast="unsigned")
@@ -103,6 +100,36 @@ def concat_csvs(files: list, keep_filename: bool=False, ignore_index: bool=True,
         dfs = [pd.read_csv(file).assign(filename=file) for file in files]
         return pd.concat(dfs, ignore_index=ignore_index, **kwargs)
     return pd.concat(map(pd.read_csv, files), ignore_index=ignore_index, **kwargs)
+
+
+def fast_insert(df: pd.DataFrame, table_name: str, engine: Engine, chunksize: int=100_000, if_exists: str="replace") -> bool:
+    # create or replace table with schema of the DataFrame
+    df.head(0).to_sql(table_name, engine, if_exists=if_exists, index=False)
+
+    try:
+        conn = engine.raw_connection() # direct, low-level connection to the database
+        with conn.cursor() as cur:
+            # use StringIO to write DataFrame as in-memory CSV
+            output = StringIO()
+
+            # chunk through DataFrame and write to PostgreSQL
+            for (idx, chunk) in df.groupby(np.arange(len(df)) // chunksize):
+                # write chunk to StringIO object
+                chunk.to_csv(output, sep='\t', header=False, index=False)
+                output.seek(0)
+
+                # use COPY command to load into PostgreSQL
+                cur.copy_from(output, table_name, null='')
+                conn.commit()
+
+                # reset StringIO object for the next chunk
+                output.seek(0)
+                output.truncate(0)
+    except Exception as e:
+        return False # failure
+    finally:
+        conn.close()
+        return True # success
 
 
 if __name__ == "__main__":

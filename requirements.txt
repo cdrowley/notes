@@ -10,3 +10,5 @@ black
 pandas-profiling
 joblib
 Faker
+sqlalchemy
+psycopg2-binary
